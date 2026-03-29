@@ -20,7 +20,7 @@ This web application digitizes the entire workflow:
 ## 📸 Features
 * **Status Management:** Separate views for "Pending" and "Completed" orders.
 * **Visual Tracking:** Support for uploading reference images for custom cake designs.
-* **Mobile Friendly:** Optimized for use on tablets and smartphones within the shop.
+* **Mobile Friendly:** Optimized for use on tablets and smartphones within the shop. 
 * **Copy-to-Clipboard Fallback:** Ensures 100% reliability for customer notifications even if browser-to-app communication is restricted.
 
 ## 🛠️ Installation & Local Setup
