@@ -3,27 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ζαχαροπλαστείο ΑΝΑΪΣ - Παραγγελίες</title>
+    <title>Ζαχαροπλαστείο ΑΝΑΪΣ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #fce4ec; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #fff0f5; font-family: 'Segoe UI', sans-serif; }
         .navbar { background-color: #d81b60 !important; }
-        .card { border: none; border-radius: 15px; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .btn-primary { background-color: #d81b60; border: none; }
-        .btn-primary:hover { background-color: #ad1457; }
-        .order-card-pending { border-left: 8px solid #ffc107; }
-        .order-card-completed { border-left: 8px solid #4caf50; }
-        .search-container { max-width: 600px; margin: 20px auto; }
-        .viber-btn { background-color: #7360f2; color: white; border: none; }
-        .wa-btn { background-color: #25D366; color: white; border: none; }
+        .card { border-radius: 12px; border: none; }
+        .order-card-pending { border-left: 6px solid #ffc107; }
+        .order-card-completed { border-left: 6px solid #28a745; }
+        .viber-btn { background-color: #7360f2; color: white; }
+        .wa-btn { background-color: #25D366; color: white; }
+        .search-box { max-width: 500px; margin: 20px auto; }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-dark shadow-sm mb-4">
+<nav class="navbar navbar-dark shadow-sm mb-4 text-center">
     <div class="container justify-content-center">
-        <span class="navbar-brand mb-0 h1">🎂 ΖΑΧΑΡΟΠΛΑΣΤΕΙΟ ΑΝΑΪΣ</span>
+        <span class="navbar-brand mb-0 h1">🍰 ΖΑΧΑΡΟΠΛΑΣΤΕΙΟ ΑΝΑΪΣ</span>
     </div>
 </nav>
 
@@ -32,69 +29,62 @@
         <h5 class="mb-3">Νέα Παραγγελία</h5>
         <form action="/add" method="POST" enctype="multipart/form-data">
             <div class="row g-3">
-                <div class="col-md-4"><input type="text" name="name" class="form-control" placeholder="Όνομα Πελάτη" required></div>
-                <div class="col-md-3"><input type="text" name="phone" class="form-control" placeholder="69XXXXXXXX"></div>
+                <div class="col-md-4"><input type="text" name="name" class="form-control" placeholder="Όνομα" required></div>
+                <div class="col-md-3"><input type="text" name="phone" class="form-control" placeholder="Κινητό"></div>
                 <div class="col-md-3"><input type="datetime-local" name="delivery_date" class="form-control" required></div>
                 <div class="col-md-2"><input type="number" step="0.01" name="down_payment" class="form-control" placeholder="Προκαταβολή €"></div>
-                <div class="col-12"><input type="text" name="description" class="form-control" placeholder="Περιγραφή (Γεύση, Σχέδιο)"></div>
+                <div class="col-12"><input type="text" name="description" class="form-control" placeholder="Γεύση / Σχέδιο"></div>
                 <div class="col-12"><input type="file" name="image" class="form-control"></div>
-                <div class="col-12"><button type="submit" class="btn btn-primary w-100 fw-bold">ΚΑΤΑΧΩΡΗΣΗ</button></div>
+                <button type="submit" class="btn btn-primary w-100 fw-bold" style="background-color:#d81b60;">ΚΑΤΑΧΩΡΗΣΗ</button>
             </div>
         </form>
     </div>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" class="form-control form-control-lg shadow-sm" 
-               placeholder="🔍 Αναζήτηση πελάτη ή περιγραφής..." onkeyup="filterOrders()">
+    <div class="search-box">
+        <input type="text" id="searchInput" class="form-control form-control-lg border-primary shadow-sm" 
+               placeholder="🔍 Αναζήτηση πελάτη..." onkeyup="searchOrders()">
     </div>
 
     <div class="row" id="ordersList">
         {% for order in orders %}
-        <div class="col-md-4 mb-4 order-item" data-name="{{ order.customer_name | lower }}" data-desc="{{ order.description | lower }}">
+        <div class="col-md-4 mb-4 order-card" data-name="{{ order.customer_name | lower }}">
             <div class="card h-100 shadow-sm {{ 'order-card-pending' if order.status == 'Pending' else 'order-card-completed' }}">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <h5 class="card-title fw-bold">{{ order.customer_name }}</h5>
+                    <div class="d-flex justify-content-between">
+                        <h5 class="fw-bold">{{ order.customer_name }}</h5>
                         <a href="/delete/{{ order.id }}" class="text-danger" onclick="return confirm('Διαγραφή;')">🗑️</a>
                     </div>
-                    <p class="mb-1 text-muted small">📞 {{ order.phone }}</p>
-                    <p class="mb-2 text-muted small">⏰ {{ order.delivery_date }}</p>
-                    <p class="card-text border-top pt-2">{{ order.description }}</p>
-                    
+                    <p class="small text-muted mb-1">📞 {{ order.phone }} | ⏰ {{ order.delivery_date }}</p>
+                    <p class="border-top pt-2">{{ order.description }}</p>
+
                     {% if order.image_path %}
-                    <img src="{{ url_for('static', filename='uploads/' + order.image_path) }}" class="img-fluid rounded mb-3 border">
+                    <img src="{{ url_for('static', filename='uploads/' + order.image_path) }}" class="img-fluid rounded mb-2">
                     {% endif %}
 
                     {% if order.status == 'Pending' %}
-                    <form action="/complete/{{ order.id }}" method="POST" class="mt-3 border-top pt-3">
+                    <form action="/complete/{{ order.id }}" method="POST" class="mt-3 border-top pt-2">
                         <div class="input-group input-group-sm mb-2">
-                            <input type="number" step="0.01" name="final_kilos" class="form-control" placeholder="Κιλά" required>
-                            <input type="number" step="0.01" name="price_per_kilo" class="form-control" placeholder="Τιμή/Κιλό" required>
+                            <input type="number" step="0.1" name="final_kilos" class="form-control" placeholder="Kg" required>
+                            <input type="number" step="0.1" name="price_per_kilo" class="form-control" placeholder="€/Kg" required>
                         </div>
                         <button type="submit" class="btn btn-sm btn-success w-100">ΟΛΟΚΛΗΡΩΣΗ</button>
                     </form>
                     {% else %}
-                        {% set total_to_pay = (order.kilos * order.price_per_kilo - order.down_payment)|round(2) %}
-                        <div class="text-center mt-3 border-top pt-3">
-                            <div class="alert alert-success py-1 small mb-2 shadow-sm">
-                                <strong>Υπόλοιπο: {{ total_to_pay }}€</strong> ({{ order.kilos }}kg)
+                    <div class="text-center mt-3 border-top pt-3">
+                        <div class="alert alert-success py-1 small mb-2">
+                            <strong>Υπόλοιπο: {{ order.total_to_pay }}€</strong> ({{ order.kilos }}kg)
+                        </div>
+                        <div class="d-flex flex-column gap-1">
+                            <div class="btn-group w-100">
+                                <button class="btn btn-sm viber-btn py-2" onclick="sendMsg('viber', '{{order.phone}}', '{{order.kilos}}', '{{order.total_to_pay}}')">🟣 Viber</button>
+                                <button class="btn btn-sm wa-btn py-2" onclick="sendMsg('wa', '{{order.phone}}', '{{order.kilos}}', '{{order.total_to_pay}}')">🟢 WA</button>
                             </div>
-                            
-                            <div class="d-flex flex-column gap-1">
-                                <div class="btn-group w-100">
-                                    <button class="btn btn-sm viber-btn py-2 fw-bold" 
-                                            onclick="sendMessage('viber', '{{order.phone}}', '{{order.kilos}}', '{{total_to_pay}}')">🟣 Viber</button>
-                                    <button class="btn btn-sm wa-btn py-2 fw-bold" 
-                                            onclick="sendMessage('whatsapp', '{{order.phone}}', '{{order.kilos}}', '{{total_to_pay}}')">🟢 WA</button>
-                                </div>
-                                <div class="btn-group w-100 mt-1">
-                                    <button class="btn btn-sm btn-dark py-2" 
-                                            onclick="sendMessage('sms', '{{order.phone}}', '{{order.kilos}}', '{{total_to_pay}}')">💬 SMS</button>
-                                    <button class="btn btn-sm btn-secondary py-2" 
-                                            onclick="copyToClipboard('{{order.kilos}}', '{{total_to_pay}}')">📋 Copy</button>
-                                </div>
+                            <div class="btn-group w-100">
+                                <button class="btn btn-sm btn-dark" onclick="sendMsg('sms', '{{order.phone}}', '{{order.kilos}}', '{{order.total_to_pay}}')">💬 SMS</button>
+                                <button class="btn btn-sm btn-secondary" onclick="copyText('{{order.kilos}}', '{{order.total_to_pay}}')">📋 Copy</button>
                             </div>
                         </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -104,53 +94,33 @@
 </div>
 
 <script>
-// Λειτουργία Αναζήτησης
-function filterOrders() {
+function searchOrders() {
     let input = document.getElementById('searchInput').value.toLowerCase();
-    let cards = document.getElementsByClassName('order-item');
-    
+    let cards = document.getElementsByClassName('order-card');
     for (let card of cards) {
         let name = card.getAttribute('data-name');
-        let desc = card.getAttribute('data-desc');
-        if (name.includes(input) || desc.includes(input)) {
-            card.style.display = "";
-        } else {
-            card.style.display = "none";
-        }
+        card.style.display = name.includes(input) ? "" : "none";
     }
 }
 
-// Λειτουργία Αποστολής Μηνυμάτων
-function sendMessage(platform, phone, kilos, total) {
-    let cleanPhone = phone.replace(/\D/g, '');
-    if (cleanPhone.length === 10 && cleanPhone.startsWith('69')) {
-        cleanPhone = '30' + cleanPhone;
-    }
-
-    let text = "Γεια σας απο το ΑΝΑΪΣ! Η παραγγελια σας (" + kilos + "kg) ειναι ετοιμη. Υπολοιπο προς πληρωμη: " + total + "€. Σας περιμενουμε!";
+function sendMsg(type, phone, kilos, total) {
+    let clean = phone.replace(/\D/g, '');
+    if (clean.length === 10) clean = '30' + clean;
+    let msg = "Γεια σας απο το ΑΝΑΪΣ! Η παραγγελια σας (" + kilos + "kg) ειναι ετοιμη. Υπολοιπο: " + total + "€. Σας περιμενουμε!";
     
     let url = "";
-    if (platform === 'viber') {
-        url = "viber://chat?number=" + cleanPhone + "&draft=" + encodeURIComponent(text);
-    } else if (platform === 'whatsapp') {
-        url = "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(text);
-    } else if (platform === 'sms') {
-        url = "sms:" + cleanPhone + "?body=" + encodeURIComponent(text);
-    }
-
-    if (url !== "") {
-        window.location.href = url;
-    }
+    if (type === 'viber') url = "viber://chat?number=" + clean + "&draft=" + encodeURIComponent(msg);
+    else if (type === 'wa') url = "https://wa.me/" + clean + "?text=" + encodeURIComponent(msg);
+    else if (type === 'sms') url = "sms:" + clean + "?body=" + encodeURIComponent(msg);
+    
+    if (url) window.location.href = url;
 }
 
-function copyToClipboard(kilos, total) {
-    let text = "Γεια σας απο το ΑΝΑΪΣ! Η παραγγελια σας (" + kilos + "kg) ειναι ετοιμη. Υπολοιπο: " + total + "€. Σας περιμενουμε!";
-    navigator.clipboard.writeText(text).then(function() {
-        alert("Το μήνυμα αντιγράφηκε στο πρόχειρο!");
-    });
+function copyText(kilos, total) {
+    let msg = "Γεια σας απο το ΑΝΑΪΣ! Η παραγγελια σας (" + kilos + "kg) ειναι ετοιμη. Υπολοιπο: " + total + "€. Σας περιμενουμε!";
+    navigator.clipboard.writeText(msg);
+    alert("Αντιγράφηκε!");
 }
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
