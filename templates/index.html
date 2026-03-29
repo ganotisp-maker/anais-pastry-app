@@ -1,124 +1,71 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ΑΝΑΪΣ - Διαχείριση Παραγγελιών</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #fdf2f4; font-family: 'Segoe UI', sans-serif; }
-        .navbar { background-color: #d63384 !important; border-bottom: 3px solid #b02a6a; }
-        .card-pending { border-left: 6px solid #ffc107; }
-        .card-completed { border-left: 6px solid #198754; background-color: #f8fff9; }
-        .viber-btn { background-color: #7360f2; color: white; border: none; font-weight: bold; }
-        .viber-btn:hover { background-color: #5b49cf; color: white; }
-        .copy-btn { background-color: #6c757d; color: white; border: none; }
-        .img-thumb { max-height: 120px; border-radius: 8px; border: 1px solid #ddd; margin: 10px 0; }
-    </style>
-</head>
-<body>
-
-<nav class="navbar navbar-dark mb-4 shadow-sm">
-    <div class="container text-center">
-        <span class="navbar-brand mb-0 h1 w-100 text-uppercase">🎂 Ζαχαροπλαστείο ΑΝΑΪΣ</span>
+<div class="text-center">
+    {% set total_to_pay = (order.kilos * order.price_per_kilo - order.down_payment)|round(2) %}
+    <div class="alert alert-success py-1 small mb-2 shadow-sm">
+        <strong>Υπόλοιπο: {{ total_to_pay }}€</strong> ({{ order.kilos }}kg)
     </div>
-</nav>
-
-<div class="container">
-    <div class="card shadow-sm mb-4 border-0">
-        <div class="card-body">
-            <h6 class="fw-bold mb-3">Νέα Παραγγελία</h6>
-            <form action="/add" method="POST" enctype="multipart/form-data" class="row g-2">
-                <div class="col-md-3"><input type="text" name="name" class="form-control" placeholder="Όνομα Πελάτη" required></div>
-                <div class="col-md-3"><input type="text" name="phone" class="form-control" placeholder="69XXXXXXXX" required></div>
-                <div class="col-md-3"><input type="datetime-local" name="delivery_date" class="form-control" required></div>
-                <div class="col-md-3"><input type="number" step="0.01" name="down_payment" class="form-control" placeholder="Προκαταβολή €"></div>
-                <div class="col-md-8"><input type="text" name="description" class="form-control" placeholder="Περιγραφή (Γεύση, Σχέδιο)"></div>
-                <div class="col-md-4"><input type="file" name="image" class="form-control"></div>
-                <div class="col-12"><button type="submit" class="btn btn-primary w-100 fw-bold" style="background-color: #d63384; border:none;">ΚΑΤΑΧΩΡΗΣΗ</button></div>
-            </form>
+    
+    <div class="d-flex flex-column gap-1">
+        <div class="btn-group w-100 shadow-sm">
+            <button class="btn btn-sm viber-btn py-2" 
+                    onclick="sendMessage('viber', '{{order.phone}}', '{{order.kilos}}', '{{total_to_pay}}')">
+                🟣 Viber
+            </button>
+            <button class="btn btn-sm btn-success py-2" 
+                    style="background-color: #25D366; border:none;"
+                    onclick="sendMessage('whatsapp', '{{order.phone}}', '{{order.kilos}}', '{{total_to_pay}}')">
+                🟢 WA
+            </button>
         </div>
-    </div>
-
-    <div class="row">
-        {% for order in orders %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 shadow-sm border-0 {% if order.status == 'Pending' %}card-pending{% else %}card-completed{% endif %}">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="fw-bold mb-0">{{ order.customer_name }}</h6>
-                        <a href="/delete/{{ order.id }}" class="text-danger text-decoration-none" onclick="return confirm('Διαγραφή;')">🗑</a>
-                    </div>
-                    <p class="small mb-1">📞 {{ order.phone }}</p>
-                    <p class="small mb-1">⏰ {{ order.delivery_date.replace('T', ' ') }}</p>
-                    <p class="small text-muted">{{ order.description }}</p>
-
-                    {% if order.image_path %}
-                    <div class="text-center">
-                        <img src="{{ url_for('static', filename='uploads/' + order.image_path) }}" class="img-thumb shadow-sm">
-                    </div>
-                    {% endif %}
-
-                    <hr>
-
-                    {% if order.status == 'Pending' %}
-                    <p class="small text-danger fw-bold">Προκαταβολή: {{ order.down_payment }}€</p>
-                    <form action="/complete/{{ order.id }}" method="POST" class="row g-1">
-                        <div class="col-5"><input type="number" step="0.01" name="final_kilos" class="form-control form-control-sm" placeholder="Κιλά" required></div>
-                        <div class="col-4"><input type="number" step="0.1" name="price_per_kilo" class="form-control form-control-sm" placeholder="€/Kg" required></div>
-                        <div class="col-3"><button type="submit" class="btn btn-sm btn-success w-100 fw-bold">✔</button></div>
-                    </form>
-                    {% else %}
-                    <div class="text-center">
-                        {% set total_to_pay = (order.kilos * order.price_per_kilo - order.down_payment)|round(2) %}
-                        <div class="alert alert-success py-1 small mb-2">
-                            <strong>Υπόλοιπο: {{ total_to_pay }}€</strong> ({{ order.kilos }}kg)
-                        </div>
-                        <div class="btn-group w-100 shadow-sm">
-                            <button class="btn btn-sm viber-btn py-2" 
-                                    onclick="sendViber('{{order.phone}}', '{{order.kilos}}', '{{total_to_pay}}')">
-                                🟣 Viber
-                            </button>
-                            <button class="btn btn-sm copy-btn py-2" 
-                                    onclick="copyToClipboard('{{order.kilos}}', '{{total_to_pay}}')">
-                                📋 Copy
-                            </button>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="btn-group w-100 shadow-sm">
+            <button class="btn btn-sm btn-dark py-2" 
+                    onclick="sendMessage('sms', '{{order.phone}}', '{{order.kilos}}', '{{total_to_pay}}')">
+                💬 SMS
+            </button>
+            <button class="btn btn-sm copy-btn py-2" 
+                    onclick="copyToClipboard('{{order.kilos}}', '{{total_to_pay}}')">
+                📋 Copy
+            </button>
         </div>
-        {% endfor %}
     </div>
 </div>
 
 <script>
-function sendViber(phone, kilos, total) {
+// Μία κεντρική συνάρτηση για όλα τα μηνύματα
+function sendMessage(platform, phone, kilos, total) {
     // 1. Καθαρισμός τηλεφώνου
     let cleanPhone = phone.replace(/\D/g, '');
     if (cleanPhone.length === 10 && cleanPhone.startsWith('69')) {
         cleanPhone = '30' + cleanPhone;
     }
 
-    // 2. Δημιουργία κειμένου (Απλό κείμενο για μέγιστη συμβατότητα)
-    let text = "Γεια σας απο το ΑΝΑΪΣ! Η παραγγελια σας (" + kilos + "kg) ειναι ετοιμη. Υπολοιπο για πληρωμη: " + total + " Ευρω. Σας περιμενουμε!";
+    // 2. Το κείμενο (Professional Tone)
+    let text = "Γεια σας απο το ΑΝΑΪΣ! Η παραγγελια σας (" + kilos + "kg) ειναι ετοιμη. Υπολοιπο: " + total + "€. Σας περιμενουμε!";
     
-    // 3. Αντιγραφή στο Clipboard (Εφεδρικό)
+    // 3. Αντιγραφή στο Clipboard (πάντα χρήσιμο ως backup)
     navigator.clipboard.writeText(text);
 
-    // 4. Άνοιγμα Viber
-    let viberUrl = "viber://chat?number=" + cleanPhone + "&draft=" + encodeURIComponent(text);
-    window.location.href = viberUrl;
+    // 4. Επιλογή πλατφόρμας
+    let url = "";
+    if (platform === 'viber') {
+        url = "viber://chat?number=" + cleanPhone + "&draft=" + encodeURIComponent(text);
+    } else if (platform === 'whatsapp') {
+        // Το WhatsApp χρησιμοποιεί το wa.me link που είναι το πιο "Pro"
+        url = "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(text);
+    } else if (platform === 'sms') {
+        // Το SMS ανοίγει την εφαρμογή μηνυμάτων του κινητού
+        url = "sms:" + cleanPhone + "?body=" + encodeURIComponent(text);
+    }
+
+    // Άνοιγμα του link
+    if (url !== "") {
+        window.location.href = url;
+    }
 }
 
 function copyToClipboard(kilos, total) {
-    let text = "Γεια σας από το ζαχαροπλαστείο ΑΝΑΪΣ! 🎂  Η παραγγελια σας (" + kilos + "kg) ειναι ετοιμη. Υπολοιπο για πληρωμη: " + total + " Ευρω. Σας περιμενουμε!";
+    let text = "Γεια σας απο το ΑΝΑΪΣ! Η παραγγελια σας (" + kilos + "kg) ειναι ετοιμη. Υπολοιπο: " + total + "€. Σας περιμενουμε!";
     navigator.clipboard.writeText(text).then(function() {
-        alert("Το μήνυμα αντιγράφηκε! Μπορείτε να κάνετε επικόλληση (Paste) στο Viber.");
+        alert("Αντιγράφηκε στο πρόχειρο!");
     });
 }
 </script>
-
-</body>
-</html>
