@@ -3,7 +3,6 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 
-# --- ΡΥΘΜΙΣΕΙΣ ΦΑΚΕΛΩΝ ΓΙΑ RENDER ---
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, 
             template_folder=os.path.join(current_dir, 'templates'),
@@ -39,7 +38,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Αρχικοποίηση βάσης
 init_db()
 
 @app.route('/')
@@ -51,7 +49,6 @@ def index():
         delivery_date ASC
     ''').fetchall()
     
-    # Επεξεργασία δεδομένων πριν το template
     orders = []
     for row in rows:
         order = dict(row)
@@ -59,7 +56,6 @@ def index():
         p = order['price_per_kilo'] if order['price_per_kilo'] else 0
         dp = order['down_payment'] if order['down_payment'] else 0
         
-        # Υπολογισμός υπολοίπου ΕΔΩ για αποφυγή Internal Server Error
         order['total_to_pay'] = round((k * p) - dp, 2)
         orders.append(order)
         
